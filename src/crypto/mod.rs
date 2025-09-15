@@ -1,16 +1,13 @@
 use aes_gcm::{
-    Aes256Gcm, Error,
+    Aes256Gcm,
     aead::{Aead, AeadCore, KeyInit, OsRng},
 };
-use base64::{Engine, engine::general_purpose};
-use sha2::{
-    Digest, Sha256,
-};
+use sha2::{Digest, Sha256, digest::generic_array::GenericArray};
 
 pub struct EncryptData {
     pub hashed_key: Vec<u8>,
     pub nonce: Vec<u8>,
-    pub cipher_text: String,
+    pub cipher_text: Vec<u8>,
 }
 
 fn encrypt(plain_text: &str, key: &str) -> Result<EncryptData, aes_gcm::Error> {
@@ -29,20 +26,40 @@ fn encrypt(plain_text: &str, key: &str) -> Result<EncryptData, aes_gcm::Error> {
     Ok(EncryptData {
         hashed_key: hashed_key.to_vec(),
         nonce: nonce.to_vec(),
-        cipher_text: general_purpose::STANDARD.encode(ciphertext),
+        // cipher_text: general_purpose::STANDARD.encode(ciphertext),
+        cipher_text: ciphertext,
     })
+}
+
+fn decrypt(data: &EncryptData) -> Result<Vec<u8>, aes_gcm::Error> {
+    let cipher = Aes256Gcm::new(GenericArray::from_slice(&data.hashed_key));
+    let plaintext = cipher.decrypt(
+        GenericArray::from_slice(&data.nonce),
+        data.cipher_text.as_ref(),
+    )?;
+
+    Ok(plaintext)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // #[test]
-    // fn test_encrypt() {
-    //     let url =
-    //         "https://docs.rs/aes-gcm/0.10.3/aes_gcm/#in-place-usage-eliminates-alloc-requirement";
-    //     let key = "test";
-    //     let got = encrypt(url, key).expect("encryption failed");
-    //     let plaintext = got.cipher_text.decrypt(got.nonce, ciphertext.as_ref())?;
-    // }
+    #[test]
+    fn test_encrypt_decrypt() {
+        let tests = vec![
+            (
+                "https://docs.rs/aes-gcm/0.10.3/aes_gcm/#in-place-usage-eliminates-alloc-requirement",
+                "test",
+            ),
+            ("https://docs.rs/aes-gcm/latest/aes_gcm/#usage", "foo"),
+            ("abc", "bar"),
+        ];
+        for (plaintext, key) in tests {
+            let got_encryption = encrypt(plaintext, key).expect("encryption failed");
+            let got_decryption = decrypt(&got_encryption).expect("decryption failed");
+
+            assert_eq!(plaintext, String::from_utf8(got_decryption).unwrap())
+        }
+    }
 }
