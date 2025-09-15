@@ -3,8 +3,8 @@
 //! ```not_rust
 //! cargo run -p example-hello-world
 //! ```
-
-use axum::{response::Html, routing::get, Router};
+mod crypto;
+use axum::{Router, response::Html, routing::get};
 
 #[tokio::main]
 async fn main() {
