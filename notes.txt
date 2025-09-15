@@ -1,0 +1,1 @@
+https://docs.shuttle.dev/templates/tutorials/rest-http-service-with-axum
