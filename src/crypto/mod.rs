@@ -10,6 +10,26 @@ pub struct EncryptData {
     pub cipher_text: Vec<u8>,
 }
 
+use base64::{Engine, engine::general_purpose};
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+pub struct EncryptDataForDynamo {
+    pub hashed_key: String,
+    pub nonce: String,
+    pub cipher_text: String,
+}
+
+impl From<EncryptData> for EncryptDataForDynamo {
+    fn from(data: EncryptData) -> Self {
+        EncryptDataForDynamo {
+            hashed_key: general_purpose::STANDARD.encode(data.hashed_key),
+            nonce: general_purpose::STANDARD.encode(data.nonce),
+            cipher_text: general_purpose::STANDARD.encode(data.cipher_text),
+        }
+    }
+}
+
 fn encrypt(plain_text: &str, key: &str) -> Result<EncryptData, aes_gcm::Error> {
     // Make a 32-byte key from the user supplied key.
     let hashed_key = Sha256::digest(key.as_bytes());
@@ -59,7 +79,23 @@ mod tests {
             let got_encryption = encrypt(plaintext, key).expect("encryption failed");
             let got_decryption = decrypt(&got_encryption).expect("decryption failed");
 
-            assert_eq!(plaintext, String::from_utf8(got_decryption).unwrap())
+            assert_eq!(plaintext, String::from_utf8(got_decryption).unwrap());
+
+            println!("key: {:?}", got_encryption.hashed_key);
+            println!("ciph: {:?}", got_encryption.cipher_text);
+            println!("nonce: {:?}", got_encryption.nonce);
+        }
+    }
+
+    #[test]
+    fn deving() {
+        let inputs = vec![("foo", "bar"), ("int", "dex")];
+        for (plaintext, key) in inputs {
+            let encrypted = encrypt(plaintext, key).expect("encryption failed");
+            let dynamo_data: EncryptDataForDynamo = encrypted.into();
+
+            let json = serde_json::to_string_pretty(&dynamo_data).unwrap();
+            println!("{}", json);
         }
     }
 }

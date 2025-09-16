@@ -1,9 +1,18 @@
 mod crypto;
 
-use aws_sdk_dynamodb::{self as dynamodb, config::Credentials, Client};
+use aws_sdk_dynamodb::{self as dynamodb, Client, config::Credentials};
 
 #[tokio::main]
 async fn main() {
+    do_db_stuff().await;
+}
+
+async fn do_db_stuff() {
+    let client = fireup_db().await;
+    check_db(client).await;
+}
+
+async fn fireup_db() -> Client {
     let creds = Credentials::new("dummy", "dummy", None, None, "dummy");
     let config = aws_config::from_env()
         .endpoint_url("http://localhost:8000")
@@ -11,9 +20,15 @@ async fn main() {
         .credentials_provider(creds)
         .load()
         .await;
-    let client = Client::new(&config);
-    let resp = client.list_tables()
-    .send().await.expect("couldn't list tables");
+    Client::new(&config)
+}
+
+async fn check_db(client: Client) {
+    let resp = client
+        .list_tables()
+        .send()
+        .await
+        .expect("couldn't list tables");
 
     println!("Tables:");
 

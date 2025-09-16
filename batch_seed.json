@@ -1,0 +1,24 @@
+{
+  "EncryptedData": [
+    {
+      "PutRequest": {
+        "Item": {
+          "id": { "S": "entry1" },
+          "hashed_key": { "S": "/N4rLtula/QIYB+3If6bXDONEO5CnqBPrlURto+/j7k=" },
+          "nonce": { "S": "CQ6WB09TCRvfHEaY"},
+          "cipher_text": { "S": "5oLTSyu9MStz5iXAH6z+kZu9+g==" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "id": { "S": "entry2" },
+          "hashed_key": { "S": "nQ+/k0n2RvFDUHLysCEghHUu9GAb1rAS+75htsXgOTA=" },
+          "nonce": { "S": "djX4YmXpsLVA2DRF" },
+          "cipher_text": { "S": "eOUEtysLu7K37h3Wevo7R7kePw==" }
+        }
+      }
+    }
+  ]
+}
