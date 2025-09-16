@@ -6,3 +6,5 @@ My understanding of AES-256 is for encryption:
 in the request body they'll only send the key and link they want to encrypt. to decrypt, they'll send an encrypted text, and a key. 
 use hashed key to look up, that way hopefully there's no duplictes.
 trying to do this where the user has to do as little as possible.
+
+docker run -p 8000:8000 amazon/dynamodb-local
