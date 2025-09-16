@@ -1,3 +1,6 @@
+use aws_sdk_dynamodb::types::AttributeValue;
+use std::collections::HashMap;
+
 use aes_gcm::{
     Aes256Gcm,
     aead::{Aead, AeadCore, KeyInit, OsRng},
@@ -10,27 +13,7 @@ pub struct EncryptData {
     pub cipher_text: Vec<u8>,
 }
 
-use base64::{Engine, engine::general_purpose};
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize)]
-pub struct EncryptDataForDynamo {
-    pub hashed_key: String,
-    pub nonce: String,
-    pub cipher_text: String,
-}
-
-impl From<EncryptData> for EncryptDataForDynamo {
-    fn from(data: EncryptData) -> Self {
-        EncryptDataForDynamo {
-            hashed_key: general_purpose::STANDARD.encode(data.hashed_key),
-            nonce: general_purpose::STANDARD.encode(data.nonce),
-            cipher_text: general_purpose::STANDARD.encode(data.cipher_text),
-        }
-    }
-}
-
-fn encrypt(plain_text: &str, key: &str) -> Result<EncryptData, aes_gcm::Error> {
+pub fn encrypt(plain_text: &str, key: &str) -> Result<EncryptData, aes_gcm::Error> {
     // Make a 32-byte key from the user supplied key.
     let hashed_key = Sha256::digest(key.as_bytes());
     let cipher = Aes256Gcm::new(&hashed_key);
@@ -51,7 +34,7 @@ fn encrypt(plain_text: &str, key: &str) -> Result<EncryptData, aes_gcm::Error> {
     })
 }
 
-fn decrypt(data: &EncryptData) -> Result<Vec<u8>, aes_gcm::Error> {
+pub fn decrypt(data: &EncryptData) -> Result<Vec<u8>, aes_gcm::Error> {
     let cipher = Aes256Gcm::new(GenericArray::from_slice(&data.hashed_key));
     let plaintext = cipher.decrypt(
         GenericArray::from_slice(&data.nonce),
@@ -59,6 +42,24 @@ fn decrypt(data: &EncryptData) -> Result<Vec<u8>, aes_gcm::Error> {
     )?;
 
     Ok(plaintext)
+}
+
+pub fn encrypt_data_to_item(id: &str, data: &EncryptData) -> HashMap<String, AttributeValue> {
+    HashMap::from([
+        ("id".to_string(), AttributeValue::S(id.to_string())),
+        (
+            "hashed_key".to_string(),
+            AttributeValue::B(data.hashed_key.clone().into()),
+        ),
+        (
+            "nonce".to_string(),
+            AttributeValue::B(data.nonce.clone().into()),
+        ),
+        (
+            "cipher_text".to_string(),
+            AttributeValue::B(data.cipher_text.clone().into()),
+        ),
+    ])
 }
 
 #[cfg(test)]
@@ -84,18 +85,6 @@ mod tests {
             println!("key: {:?}", got_encryption.hashed_key);
             println!("ciph: {:?}", got_encryption.cipher_text);
             println!("nonce: {:?}", got_encryption.nonce);
-        }
-    }
-
-    #[test]
-    fn deving() {
-        let inputs = vec![("foo", "bar"), ("int", "dex")];
-        for (plaintext, key) in inputs {
-            let encrypted = encrypt(plaintext, key).expect("encryption failed");
-            let dynamo_data: EncryptDataForDynamo = encrypted.into();
-
-            let json = serde_json::to_string_pretty(&dynamo_data).unwrap();
-            println!("{}", json);
         }
     }
 }

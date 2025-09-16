@@ -6,3 +6,4 @@ run-db:
 	docker run -d --rm --name $(DYNAMODB_CONTAINER_NAME) -p $(HOST_PORT):$(CONTAINER_PORT) amazon/dynamodb-local
 stop-db:
 	docker stop $(DYNAMODB_CONTAINER_NAME)
+	docker rm $(DYNAMODB_CONTAINER_NAME)
