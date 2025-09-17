@@ -36,3 +36,9 @@ aws dynamodb put-item \
   "nonce": "djX4YmXpsLVA2DRF",
   "cipher_text": "eOUEtysLu7K37h3Wevo7R7kePw=="
 }
+
+equivalent:
+match self.client.list_tables().send().await {
+    Ok(_) => Ok(()),
+    Err(e) => Err(e),
+}
