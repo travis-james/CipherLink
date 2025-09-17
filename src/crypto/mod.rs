@@ -44,24 +44,6 @@ pub fn decrypt(data: &EncryptData) -> Result<Vec<u8>, aes_gcm::Error> {
     Ok(plaintext)
 }
 
-pub fn encrypt_data_to_item(id: &str, data: &EncryptData) -> HashMap<String, AttributeValue> {
-    HashMap::from([
-        ("id".to_string(), AttributeValue::S(id.to_string())),
-        (
-            "hashed_key".to_string(),
-            AttributeValue::B(data.hashed_key.clone().into()),
-        ),
-        (
-            "nonce".to_string(),
-            AttributeValue::B(data.nonce.clone().into()),
-        ),
-        (
-            "cipher_text".to_string(),
-            AttributeValue::B(data.cipher_text.clone().into()),
-        ),
-    ])
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
