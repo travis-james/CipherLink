@@ -8,6 +8,7 @@ use crate::{
 mod crypto;
 pub mod db;
 mod transformer;
+mod server;
 
 #[tokio::main]
 async fn main() {
@@ -19,6 +20,7 @@ async fn main() {
 
     let mode = args[1].as_str();
     match mode {
+        "server" => server::init().await,
         "db" => seed_db().await,
         _ => {
             eprintln!("Unknown mode: '{}'. Use 'db'.", mode);
