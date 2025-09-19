@@ -10,13 +10,13 @@ use aws_sdk_dynamodb::{
     },
 };
 
-struct DynamoDBClient {
+pub struct DynamoDBClient {
     client: Client,
 }
 
 // "http://localhost:8000"
 // "us-west-2"
-pub async fn init(url: &str, region: &str) -> Client {
+pub async fn init(url: &str, region: &str) -> DynamoDBClient {
     let creds = Credentials::new("dummy", "dummy", None, None, "dummy");
     let config = aws_config::from_env()
         .endpoint_url(url)
@@ -24,11 +24,14 @@ pub async fn init(url: &str, region: &str) -> Client {
         .credentials_provider(creds)
         .load()
         .await;
-    Client::new(&config)
+
+    DynamoDBClient {
+        client: Client::new(&config),
+    }
 }
 
 impl DynamoDBClient {
-    async fn create_table(&self, table_name: &str, attribute_name: &str) -> Result<(), Error> {
+    pub async fn init_table(&self, table_name: &str, attribute_name: &str) -> Result<(), Error> {
         self.client
             .create_table()
             .table_name(table_name)
@@ -58,7 +61,7 @@ impl DynamoDBClient {
         Ok(())
     }
 
-    async fn insert_item(
+    pub async fn insert_item(
         &self,
         table_name: &str,
         item: HashMap<String, AttributeValue>,
@@ -75,6 +78,14 @@ impl DynamoDBClient {
 
     pub async fn check_db(&self) -> Result<(), Error> {
         self.client.list_tables().send().await?;
+        Ok(())
+    }
+
+    pub async fn dump_table(&self, table_name: &str) -> Result<(), Error> {
+        let resp = self.client.scan().table_name(table_name).send().await?;
+        for item in resp.items() {
+            println!("{:?}", item)
+        }
         Ok(())
     }
 }
