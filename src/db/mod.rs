@@ -10,6 +10,7 @@ use aws_sdk_dynamodb::{
     },
 };
 
+#[derive(Clone)]
 pub struct DynamoDBClient {
     client: Client,
 }
@@ -89,12 +90,3 @@ impl DynamoDBClient {
         Ok(())
     }
 }
-
-// async fn do_db_stuff() {
-//     let client = fireup_db().await;
-//     check_db(&client).await;
-//     create_table(&client).await;
-//     check_db(&client).await;
-//     let data = encrypt("foo", "bar").expect("failed");
-//     insert_item(&client, "stuff", "1", &data).await;
-// }

@@ -1,20 +1,17 @@
 use std::env;
 
-use crate::{
-    crypto::encrypt,
-    transformer::encrypt_data_to_item,
-};
+use crate::{crypto::encrypt, transformer::encrypt_data_to_item};
 
 mod crypto;
 pub mod db;
-mod transformer;
 mod server;
+mod transformer;
 
 #[tokio::main]
 async fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        eprintln!("must specify mode: 'db'");
+        eprintln!("must specify mode: 'server', 'db'");
         std::process::exit(1);
     }
 
@@ -23,7 +20,7 @@ async fn main() {
         "server" => server::init().await,
         "db" => seed_db().await,
         _ => {
-            eprintln!("Unknown mode: '{}'. Use 'db'.", mode);
+            eprintln!("Unknown mode: '{}'.", mode);
             std::process::exit(1);
         }
     }

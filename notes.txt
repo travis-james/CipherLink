@@ -13,3 +13,7 @@ DynamoDB Local: Stores data in a custom format inside a directory (-dbPath) but 
 https://docs.aws.amazon.com/sdk-for-rust/latest/dg/hello.html
 
 cargo +nightly udeps
+
+curl -X POST http://localhost:3000/encrypt \
+  -H "Content-Type: application/json" \
+  -d '{"plain_text":"hello world","key":"secret123"}'
