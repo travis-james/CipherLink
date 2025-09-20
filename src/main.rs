@@ -1,7 +1,7 @@
 use std::env;
 
 use crate::{
-    crypto::{EncryptData, encrypt},
+    crypto::encrypt,
     transformer::encrypt_data_to_item,
 };
 

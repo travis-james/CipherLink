@@ -11,3 +11,6 @@ stop-db:
 
 seed-db:
 	cargo run -- db
+
+run:
+	cargo run -- server
