@@ -1,6 +1,3 @@
-use aws_sdk_dynamodb::types::AttributeValue;
-use std::collections::HashMap;
-
 use aes_gcm::{
     Aes256Gcm,
     aead::{Aead, AeadCore, KeyInit, OsRng},
