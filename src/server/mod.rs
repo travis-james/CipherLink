@@ -2,10 +2,11 @@ use axum::{
     Extension, Json, Router,
     extract::Path,
     http::StatusCode,
-    response::IntoResponse,
+    response::{IntoResponse, Redirect, Response},
     routing::{get, post},
 };
 use serde::{Deserialize, Serialize};
+use url::Url;
 use uuid::Uuid;
 
 use crate::{
@@ -39,18 +40,6 @@ struct EncryptResponse {
 #[serde(tag = "status", content = "data")]
 enum EncryptApiResponse {
     Ok(EncryptResponse),
-    Err(ErrorResponse),
-}
-
-#[derive(Serialize)]
-struct DecryptResponse {
-    plain_text: String,
-}
-
-#[derive(Serialize)]
-#[serde(tag = "status", content = "data")]
-enum DecryptApiResponse {
-    Ok(DecryptResponse),
     Err(ErrorResponse),
 }
 
@@ -101,35 +90,42 @@ async fn encrypt_handler(
 async fn decrypt_handler(
     Extension(db_client): Extension<DynamoDBClient>,
     Path(id): Path<String>,
-) -> impl IntoResponse {
+) -> Response {
     let data = match db_client.get("encryptData", &id).await {
         Ok(data) => data,
         Err(e) => {
-            return Json(DecryptApiResponse::Err(ErrorResponse {
+            return Json(ErrorResponse {
                 error: format!("DB insert failed: {}", e),
-            }));
+            })
+            .into_response();
         }
     };
 
     let transformed_data = match item_to_encryt_data(&data) {
         Ok(transformed_data) => transformed_data,
         Err(e) => {
-            return Json(DecryptApiResponse::Err(ErrorResponse {
+            return Json(ErrorResponse {
                 error: format!("Failed to transform: {}", e),
-            }));
+            })
+            .into_response();
         }
     };
     let decrypted_data = match decrypt(&transformed_data) {
         Ok(decrypted_data) => decrypted_data,
         Err(e) => {
-            return Json(DecryptApiResponse::Err(ErrorResponse {
+            return Json(ErrorResponse {
                 error: format!("Failed to decrypt: {}", e),
-            }));
+            })
+            .into_response();
         }
     };
     let str_data = String::from_utf8_lossy(&decrypted_data).to_string();
 
-    Json(DecryptApiResponse::Ok(DecryptResponse {
-        plain_text: (str_data),
-    }))
+    match Url::parse(&str_data) {
+        Ok(valid_url) => Redirect::temporary(valid_url.as_str()).into_response(),
+        Err(_) => Json(ErrorResponse {
+            error: "Decrypted data is not a valid URL".to_string(),
+        })
+        .into_response(),
+    }
 }
