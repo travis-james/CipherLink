@@ -1,0 +1,40 @@
+meta {
+  name: encrypt
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{url}}/encrypt
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "plain_text": "http://yahoo.com",
+    "key": "foobar"
+  }
+}
+
+tests {
+  test("200 OK", function () {
+    expect(200).to.equal(res.status);
+  })
+  
+  const body = res.body;
+  
+  test("status Ok", function () {
+    expect(body.status).to.equal("Ok");
+  })
+  
+  test("received id", function () {
+    expect(body.data.id).to.not.be.undefined;
+    bru.setEnvVar("id", body.data.id)
+    console.log("encrypt resp id: ", body.data.id)
+  })
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,7 +1,7 @@
 DYNAMODB_CONTAINER_NAME=dynamodb-local
 HOST_PORT=8000
 CONTAINER_PORT=8000
-IMAGE_TO_USE=amazon/dynamodb-local
+IMAGE_TO_USE=amazon/dynamodb-local:3.1.0
 
 run-db:
 	docker run -d --name $(DYNAMODB_CONTAINER_NAME) -p $(HOST_PORT):$(CONTAINER_PORT) $(IMAGE_TO_USE)

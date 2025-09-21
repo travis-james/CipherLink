@@ -1,0 +1,28 @@
+meta {
+  name: health
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{url}}/health
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("200 OK", function () {
+    expect(res.status).to.equal(200);
+  })
+  
+  const body = res.body;
+  console.log(body)
+  
+  test("Response is Healthy", function () {
+    expect(body.status).to.equal("healthy");
+  })
+}
+
+settings {
+  encodeUrl: true
+}
