@@ -11,14 +11,14 @@ mod transformer;
 async fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        eprintln!("must specify mode: 'server', 'db'");
+        eprintln!("must specify mode: 'server', 'seed'");
         std::process::exit(1);
     }
 
     let mode = args[1].as_str();
     match mode {
         "server" => server::init().await,
-        "db" => seed_db().await,
+        "seed" => seed_db().await,
         _ => {
             eprintln!("Unknown mode: '{}'.", mode);
             std::process::exit(1);

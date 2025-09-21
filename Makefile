@@ -9,7 +9,7 @@ stop-db:
 	docker stop $(DYNAMODB_CONTAINER_NAME)
 	docker rm $(DYNAMODB_CONTAINER_NAME)
 
-seed-db:
-	cargo run -- db
+seed:
+	cargo run -- seed
 server:
 	cargo run -- server

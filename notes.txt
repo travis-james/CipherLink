@@ -17,3 +17,5 @@ cargo +nightly udeps
 curl -X POST http://localhost:3000/encrypt \
   -H "Content-Type: application/json" \
   -d '{"plain_text":"hello world","key":"secret123"}'
+
+curl http://localhost:3000/decrypt/e95265b4-3dd4-4da8-ada7-efdb911fb715
