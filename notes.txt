@@ -19,3 +19,7 @@ curl -X POST http://localhost:3000/encrypt \
   -d '{"plain_text":"http://yahoo.com","key":"foobar"}'
 
 curl http://localhost:3000/decrypt/e69ac920-2e1e-4206-a3f2-f51a4e492cc4
+
+kind of lost sight of what i was doing, need to 
+only store cipher text and nonce.
+delete the link if after redirect.
