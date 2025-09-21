@@ -1,5 +1,6 @@
 use axum::{
     Extension, Json, Router,
+    extract::Path,
     http::StatusCode,
     response::IntoResponse,
     routing::{get, post},
@@ -8,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
-    crypto::encrypt,
+    crypto::{decrypt, encrypt},
     db::{self, DynamoDBClient},
     transformer::encrypt_data_to_item,
 };
@@ -31,7 +32,7 @@ struct EncryptRequest {
 
 #[derive(Serialize)]
 struct EncryptResponse {
-    your_key: String,
+    id: String,
 }
 
 #[derive(Serialize)]
@@ -41,7 +42,6 @@ enum EncryptApiResponse {
     Err(ErrorResponse),
 }
 
-
 pub async fn init() {
     let url = "http://localhost:8000";
     let region = "us-west-2";
@@ -50,6 +50,7 @@ pub async fn init() {
     let app = Router::new()
         .route("/health", get(health_handler))
         .route("/encrypt", post(encrypt_handler))
+        //.route("/decrypt/:id", get(decrypt_handler))
         .layer(Extension(db_client));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
@@ -65,10 +66,12 @@ async fn encrypt_handler(
     Json(payload): Json<EncryptRequest>,
 ) -> impl IntoResponse {
     let encrypted_data = match encrypt(&payload.plain_text, &payload.key) {
-        Ok(data) => data,
-        Err(_) => return Json(EncryptApiResponse::Err(ErrorResponse {
-            error: "Encryption failed".to_string(),
-        })),
+        Ok(encrypted_data) => encrypted_data,
+        Err(_) => {
+            return Json(EncryptApiResponse::Err(ErrorResponse {
+                error: "Encryption failed".to_string(),
+            }));
+        }
     };
 
     let id = Uuid::new_v4().to_string();
@@ -80,6 +83,18 @@ async fn encrypt_handler(
         }));
     }
 
-    Json(EncryptApiResponse::Ok(EncryptResponse { your_key: id }))
+    Json(EncryptApiResponse::Ok(EncryptResponse { id }))
 }
 
+// async fn decrypt_handler(
+//     Extension(db_client): Extension<DynamoDBClient>,
+//     Path(id): Path<String>,
+// ) -> impl IntoResponse {
+//     let data = match db_client.get("encryptData", &id).await {
+//         Ok(data) => data,
+//         Err(e) => return Json(ErrorResponse {
+//             error: format!("DB insert failed: {}", e),
+//         }),
+//     };
+
+// }

@@ -67,11 +67,20 @@ impl DynamoDBClient {
         table_name: &str,
         item: HashMap<String, AttributeValue>,
     ) -> Result<(), Error> {
-        //let item = encrypt_data_to_item(id, data);
         self.client
             .put_item()
             .table_name(table_name)
             .set_item(Some(item))
+            .send()
+            .await?;
+        Ok(())
+    }
+
+    pub async fn get(&self, table_name: &str, id: &str) -> Result<(), Error> {
+        self.client
+            .get_item()
+            .table_name(table_name)
+            .key("id", AttributeValue::S(id.to_string()))
             .send()
             .await?;
         Ok(())

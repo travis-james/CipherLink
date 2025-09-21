@@ -22,6 +22,26 @@ pub fn encrypt_data_to_item(id: &str, data: &EncryptData) -> HashMap<String, Att
     item
 }
 
+pub fn item_to_encryt_data(item: &HashMap<String, AttributeValue>) -> Result<EncryptData, String> {
+    let hashed_key = match item.get("hashed_key") {
+        Some(AttributeValue::B(bytes)) => bytes.as_ref().to_vec(),
+        _ => return Err("Missing or invalid 'hashed_key'".into()),
+    };
+    let nonce = match item.get("nonce") {
+        Some(AttributeValue::B(bytes)) => bytes.as_ref().to_vec(),
+        _ => return Err("Missing or invalid 'nonce'".into()),
+    };
+    let cipher_text = match item.get("cipher_text") {
+        Some(AttributeValue::B(bytes)) => bytes.as_ref().to_vec(),
+        _ => return Err("Missing or invalid 'cipher_text'".into()),
+    };
+    Ok(EncryptData {
+        hashed_key,
+        nonce,
+        cipher_text,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -45,5 +65,32 @@ mod tests {
             expected_len,
             got.len()
         );
+    }
+
+    #[test]
+    fn test_item_to_encrypt_data() {
+        let id = "5";
+        let data = &EncryptData {
+            hashed_key: vec![0x01, 0x02, 0x03],
+            nonce: vec![0x04, 0x05, 0x06],
+            cipher_text: vec![0x07, 0x08, 0x09],
+        };
+        let item = encrypt_data_to_item(id, data);
+        let got = item_to_encryt_data(&item).expect("failed to transform");
+        assert_eq!(
+            data.hashed_key, got.hashed_key,
+            "expected hashed key: {:?}, got: {:?}",
+            data.hashed_key, got.hashed_key,
+        );
+        assert_eq!(
+            data.nonce, got.nonce,
+            "expected nonce: {:?}, got: {:?}",
+            data.nonce, got.nonce,
+        );
+        assert_eq!(
+            data.cipher_text, got.cipher_text,
+            "expected cipher_text: {:?}, got: {:?}",
+            data.cipher_text, got.cipher_text,
+        )
     }
 }
