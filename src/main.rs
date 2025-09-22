@@ -1,11 +1,12 @@
 use std::env;
 
-use crate::{crypto::encrypt, transformer::encrypt_data_to_item};
+use crate::{app_config::Config, crypto::encrypt, transformer::encrypt_data_to_item};
 
 mod crypto;
 pub mod db;
 mod server;
 mod transformer;
+mod app_config;
 
 #[tokio::main]
 async fn main() {
@@ -28,9 +29,9 @@ async fn main() {
 
 async fn seed_db() {
     println!("Starting 'db' mode, seeding DynamoDB....");
-    let url = "http://localhost:8000";
-    let region = "us-west-2";
-    let db_client = db::init(url, region).await;
+
+    let config = Config::from_env();
+    let db_client = db::init(&config.db_url, &config.region).await;
     let table_name = "encryptData";
     let attribute_name = "id";
     db_client

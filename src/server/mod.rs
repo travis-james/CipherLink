@@ -10,9 +10,7 @@ use url::Url;
 use uuid::Uuid;
 
 use crate::{
-    crypto::{decrypt, encrypt},
-    db::{self, DynamoDBClient},
-    transformer::{encrypt_data_to_item, item_to_encryt_data},
+    app_config::Config, crypto::{decrypt, encrypt}, db::{self, DynamoDBClient}, transformer::{encrypt_data_to_item, item_to_encryt_data}
 };
 
 #[derive(Serialize)]
@@ -50,9 +48,9 @@ struct DecryptParams {
 }
 
 pub async fn init() {
-    let url = "http://localhost:8000";
-    let region = "us-west-2";
-    let db_client = db::init(url, region).await;
+    let config = Config::from_env();
+
+    let db_client = db::init(&config.db_url, &config.region).await;
 
     let app = Router::new()
         .route("/health", get(health_handler))
@@ -60,7 +58,8 @@ pub async fn init() {
         .route("/decrypt/{id}/{key}", get(decrypt_handler))
         .layer(Extension(db_client));
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+        let addr = format!("0.0.0.0:{}", config.server_port);
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
