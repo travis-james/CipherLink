@@ -1,6 +1,8 @@
 use std::env;
 
-#[derive(Debug)]
+/// Configuration values loaded from environment variables.
+/// 
+/// Holds runtime configuration for the application.
 pub struct AppConfig {
     pub region: String,
     pub db_url: String,
@@ -8,11 +10,15 @@ pub struct AppConfig {
 }
 
 impl AppConfig {
+        /// Constructs an `AppConfig` from environment variables.
+    ///
+    /// # Panics
+    /// Panics if any required environment variable is missing or malformed.
     pub fn from_env() -> Self {
-        let region = env::var("CONFIG_REGION").expect("unable to get region");
-        let db_url = env::var("CONFIG_DB_URL").expect("unable to get db url");
+        let region = env::var("CONFIG_REGION").expect("unable to get CONFIG_REGION");
+        let db_url = env::var("CONFIG_DB_URL").expect("unable to get CONFIG_DB_URL");
         let server_port = env::var("CONFIG_SERVER_PORT")
-            .expect("unable to get server port")
+            .expect("unable to get CONFIG_SERVER_PORT")
             .parse::<u16>()
             .expect("CONFIG_SERVER_PORT must be a valid u16");
 
