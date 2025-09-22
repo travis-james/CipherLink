@@ -5,15 +5,14 @@ use aes_gcm::{
 use sha2::{Digest, Sha256, digest::generic_array::GenericArray};
 
 pub struct EncryptData {
-    pub hashed_key: Vec<u8>,
     pub nonce: Vec<u8>,
     pub cipher_text: Vec<u8>,
 }
 
 pub fn encrypt(plain_text: &str, key: &str) -> Result<EncryptData, aes_gcm::Error> {
     // Make a 32-byte key from the user supplied key.
-    let hashed_key = Sha256::digest(key.as_bytes());
-    let cipher = Aes256Gcm::new(&hashed_key);
+    let derived_key = Sha256::digest(key.as_bytes());
+    let cipher = Aes256Gcm::new(&derived_key);
 
     let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
 
@@ -24,15 +23,17 @@ pub fn encrypt(plain_text: &str, key: &str) -> Result<EncryptData, aes_gcm::Erro
     // in String format. Since raw bytes are just binary, encode
     // it in base64 that is text safe.
     Ok(EncryptData {
-        hashed_key: hashed_key.to_vec(),
         nonce: nonce.to_vec(),
         // cipher_text: general_purpose::STANDARD.encode(ciphertext),
         cipher_text: ciphertext,
     })
 }
 
-pub fn decrypt(data: &EncryptData) -> Result<Vec<u8>, aes_gcm::Error> {
-    let cipher = Aes256Gcm::new(GenericArray::from_slice(&data.hashed_key));
+pub fn decrypt(data: &EncryptData, key: &str) -> Result<Vec<u8>, aes_gcm::Error> {
+    // derive the key again.
+    let derived_key = Sha256::digest(key.as_bytes());
+    let cipher = Aes256Gcm::new(&derived_key.into());
+
     let plaintext = cipher.decrypt(
         GenericArray::from_slice(&data.nonce),
         data.cipher_text.as_ref(),
@@ -57,11 +58,10 @@ mod tests {
         ];
         for (plaintext, key) in tests {
             let got_encryption = encrypt(plaintext, key).expect("encryption failed");
-            let got_decryption = decrypt(&got_encryption).expect("decryption failed");
+            let got_decryption = decrypt(&got_encryption, key).expect("decryption failed");
 
             assert_eq!(plaintext, String::from_utf8(got_decryption).unwrap());
 
-            println!("key: {:?}", got_encryption.hashed_key);
             println!("ciph: {:?}", got_encryption.cipher_text);
             println!("nonce: {:?}", got_encryption.nonce);
         }

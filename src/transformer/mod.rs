@@ -8,10 +8,6 @@ pub fn encrypt_data_to_item(id: &str, data: &EncryptData) -> HashMap<String, Att
     let mut item = HashMap::new();
     item.insert("id".to_string(), AttributeValue::S(id.to_string()));
     item.insert(
-        "hashed_key".to_string(),
-        AttributeValue::B(data.hashed_key.clone().into()),
-    );
-    item.insert(
         "nonce".to_string(),
         AttributeValue::B(data.nonce.clone().into()),
     );
@@ -23,10 +19,6 @@ pub fn encrypt_data_to_item(id: &str, data: &EncryptData) -> HashMap<String, Att
 }
 
 pub fn item_to_encryt_data(item: &HashMap<String, AttributeValue>) -> Result<EncryptData, String> {
-    let hashed_key = match item.get("hashed_key") {
-        Some(AttributeValue::B(bytes)) => bytes.as_ref().to_vec(),
-        _ => return Err("Missing or invalid 'hashed_key'".into()),
-    };
     let nonce = match item.get("nonce") {
         Some(AttributeValue::B(bytes)) => bytes.as_ref().to_vec(),
         _ => return Err("Missing or invalid 'nonce'".into()),
@@ -36,7 +28,6 @@ pub fn item_to_encryt_data(item: &HashMap<String, AttributeValue>) -> Result<Enc
         _ => return Err("Missing or invalid 'cipher_text'".into()),
     };
     Ok(EncryptData {
-        hashed_key,
         nonce,
         cipher_text,
     })
@@ -52,7 +43,6 @@ mod tests {
         // for when I do add more tests.
         let id = "5";
         let data = &EncryptData {
-            hashed_key: vec![0x01, 0x02, 0x03],
             nonce: vec![0x04, 0x05, 0x06],
             cipher_text: vec![0x07, 0x08, 0x09],
         };
@@ -71,17 +61,11 @@ mod tests {
     fn test_item_to_encrypt_data() {
         let id = "5";
         let data = &EncryptData {
-            hashed_key: vec![0x01, 0x02, 0x03],
             nonce: vec![0x04, 0x05, 0x06],
             cipher_text: vec![0x07, 0x08, 0x09],
         };
         let item = encrypt_data_to_item(id, data);
         let got = item_to_encryt_data(&item).expect("failed to transform");
-        assert_eq!(
-            data.hashed_key, got.hashed_key,
-            "expected hashed key: {:?}, got: {:?}",
-            data.hashed_key, got.hashed_key,
-        );
         assert_eq!(
             data.nonce, got.nonce,
             "expected nonce: {:?}, got: {:?}",

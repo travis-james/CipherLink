@@ -43,6 +43,12 @@ enum EncryptApiResponse {
     Err(ErrorResponse),
 }
 
+#[derive(Debug, Deserialize)]
+struct DecryptParams {
+    id: String,
+    key: String,
+}
+
 pub async fn init() {
     let url = "http://localhost:8000";
     let region = "us-west-2";
@@ -51,7 +57,7 @@ pub async fn init() {
     let app = Router::new()
         .route("/health", get(health_handler))
         .route("/encrypt", post(encrypt_handler))
-        .route("/decrypt/{id}", get(decrypt_handler))
+        .route("/decrypt/{id}/{key}", get(decrypt_handler))
         .layer(Extension(db_client));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
@@ -89,18 +95,20 @@ async fn encrypt_handler(
 
 async fn decrypt_handler(
     Extension(db_client): Extension<DynamoDBClient>,
-    Path(id): Path<String>,
+    Path(params): Path<DecryptParams>,
 ) -> Response {
-    let data = match db_client.get("encryptData", &id).await {
+    // Get the data.
+    let data = match db_client.get("encryptData", "id", &params.id).await {
         Ok(data) => data,
         Err(e) => {
             return Json(ErrorResponse {
-                error: format!("DB insert failed: {}", e),
+                error: format!("DB get failed: {}", e),
             })
             .into_response();
         }
     };
 
+    // Decode the data from dynamodb.
     let transformed_data = match item_to_encryt_data(&data) {
         Ok(transformed_data) => transformed_data,
         Err(e) => {
@@ -110,7 +118,9 @@ async fn decrypt_handler(
             .into_response();
         }
     };
-    let decrypted_data = match decrypt(&transformed_data) {
+
+    // Now decrypt retrieved data.
+    let decrypted_data = match decrypt(&transformed_data, &params.key) {
         Ok(decrypted_data) => decrypted_data,
         Err(e) => {
             return Json(ErrorResponse {
@@ -119,8 +129,9 @@ async fn decrypt_handler(
             .into_response();
         }
     };
-    let str_data = String::from_utf8_lossy(&decrypted_data).to_string();
 
+    // Finally redirect.
+    let str_data = String::from_utf8_lossy(&decrypted_data).to_string();
     match Url::parse(&str_data) {
         Ok(valid_url) => Redirect::temporary(valid_url.as_str()).into_response(),
         Err(_) => Json(ErrorResponse {

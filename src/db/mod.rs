@@ -79,20 +79,21 @@ impl DynamoDBClient {
     pub async fn get(
         &self,
         table_name: &str,
-        id: &str,
+        key: &str,
+        val: &str,
     ) -> Result<HashMap<String, AttributeValue>, String> {
         let response = self
             .client
             .get_item()
             .table_name(table_name)
-            .key("id", AttributeValue::S(id.to_string()))
+            .key(key, AttributeValue::S(val.to_string()))
             .send()
             .await
             .map_err(|e| format!("DynamoDB get_item failed: {}", e))?;
 
         response
             .item
-            .ok_or_else(|| format!("Item not found for id: {}", id))
+            .ok_or_else(|| format!("Item not found for: {}", val))
     }
 
     pub async fn check_db(&self) -> Result<(), Error> {
