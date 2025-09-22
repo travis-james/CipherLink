@@ -1,20 +1,18 @@
 use std::env;
 
-use crate::{crypto::encrypt, transformer::encrypt_data_to_item};
+use crate::{app_config::AppConfig, crypto::encrypt, transformer::encrypt_data_to_item};
 
 mod app_config;
 mod crypto;
 mod db;
 mod server;
 mod transformer;
-use app_config::AppConfig;
 
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
 
-    let config = AppConfig::from_env();
-    println!("Loaded config: {:?}", config);
+    let config = app_config::AppConfig::from_env();
 
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
