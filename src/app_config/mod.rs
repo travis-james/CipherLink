@@ -11,8 +11,6 @@ pub struct Config {
 
 impl Config {
     pub fn from_env() -> Self {
-        dotenv().ok();
-
         config_crate::Config::builder()
             .add_source(config_crate::Environment::default().separator("_"))
             .build()

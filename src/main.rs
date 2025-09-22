@@ -10,6 +10,8 @@ mod app_config;
 
 #[tokio::main]
 async fn main() {
+    dotenv::dotenv().ok(); 
+    
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         eprintln!("must specify mode: 'server', 'seed'");
@@ -31,6 +33,7 @@ async fn seed_db() {
     println!("Starting 'db' mode, seeding DynamoDB....");
 
     let config = Config::from_env();
+    println!("Loaded config: {:?}", config);
     let db_client = db::init(&config.db_url, &config.region).await;
     let table_name = "encryptData";
     let attribute_name = "id";
