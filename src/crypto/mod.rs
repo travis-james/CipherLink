@@ -6,29 +6,38 @@ use sha2::{Digest, Sha256, digest::generic_array::GenericArray};
 
 pub struct EncryptData {
     pub nonce: Vec<u8>,
-    pub cipher_text: Vec<u8>,
+    pub encrypted_text: Vec<u8>,
 }
 
+/// Encrypts the user provided plain_text with the given key.
+/// Returns the encrypted text and nonce used during encryption as a struct.
+///
+/// # Errors
+/// Returns an error if encryption fails.
+///
+/// # Safety
+/// This function does not panic under normal conditions.
 pub fn encrypt(plain_text: &str, key: &str) -> Result<EncryptData, aes_gcm::Error> {
-    // Make a 32-byte key from the user supplied key.
+    // Make a 32-byte key from the user supplied key, otherwise AES256GCM panics.
     let derived_key = Sha256::digest(key.as_bytes());
     let cipher = Aes256Gcm::new(&derived_key);
-
     let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
-
     let ciphertext = cipher.encrypt(&nonce, plain_text.as_bytes())?;
 
-    // String can only handle UTF-8 text. ciphertext is raw bytes
-    // that can include invalid UTF-8, thus being misrepresented
-    // in String format. Since raw bytes are just binary, encode
-    // it in base64 that is text safe.
     Ok(EncryptData {
         nonce: nonce.to_vec(),
-        // cipher_text: general_purpose::STANDARD.encode(ciphertext),
-        cipher_text: ciphertext,
+        encrypted_text: ciphertext,
     })
 }
 
+/// Decrypts the user provided encrypted text with the user provided key
+/// and nonce. Returns the plain text of the provided encrypted text.
+///
+/// # Errors
+/// Returns an error if decryption fails.
+///
+/// # Safety
+/// This function does not panic under normal conditions.
 pub fn decrypt(data: &EncryptData, key: &str) -> Result<Vec<u8>, aes_gcm::Error> {
     // derive the key again.
     let derived_key = Sha256::digest(key.as_bytes());
@@ -36,7 +45,7 @@ pub fn decrypt(data: &EncryptData, key: &str) -> Result<Vec<u8>, aes_gcm::Error>
 
     let plaintext = cipher.decrypt(
         GenericArray::from_slice(&data.nonce),
-        data.cipher_text.as_ref(),
+        data.encrypted_text.as_ref(),
     )?;
 
     Ok(plaintext)
@@ -62,7 +71,7 @@ mod tests {
 
             assert_eq!(plaintext, String::from_utf8(got_decryption).unwrap());
 
-            println!("ciph: {:?}", got_encryption.cipher_text);
+            println!("ciph: {:?}", got_encryption.encrypted_text);
             println!("nonce: {:?}", got_encryption.nonce);
         }
     }

@@ -1,7 +1,7 @@
 use std::env;
 
 /// Configuration values loaded from environment variables.
-/// 
+///
 /// Holds runtime configuration for the application.
 pub struct AppConfig {
     pub region: String,
@@ -10,7 +10,7 @@ pub struct AppConfig {
 }
 
 impl AppConfig {
-        /// Constructs an `AppConfig` from environment variables.
+    /// Constructs an `AppConfig` from environment variables.
     ///
     /// # Panics
     /// Panics if any required environment variable is missing or malformed.

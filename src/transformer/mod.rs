@@ -13,7 +13,7 @@ pub fn encrypt_data_to_item(id: &str, data: &EncryptData) -> HashMap<String, Att
     );
     item.insert(
         "cipher_text".to_string(),
-        AttributeValue::B(data.cipher_text.clone().into()),
+        AttributeValue::B(data.encrypted_text.clone().into()),
     );
     item
 }
@@ -27,7 +27,10 @@ pub fn item_to_encryt_data(item: &HashMap<String, AttributeValue>) -> Result<Enc
         Some(AttributeValue::B(bytes)) => bytes.as_ref().to_vec(),
         _ => return Err("Missing or invalid 'cipher_text'".into()),
     };
-    Ok(EncryptData { nonce, cipher_text })
+    Ok(EncryptData {
+        nonce,
+        encrypted_text: cipher_text,
+    })
 }
 
 #[cfg(test)]
@@ -41,7 +44,7 @@ mod tests {
         let id = "5";
         let data = &EncryptData {
             nonce: vec![0x04, 0x05, 0x06],
-            cipher_text: vec![0x07, 0x08, 0x09],
+            encrypted_text: vec![0x07, 0x08, 0x09],
         };
         let got = encrypt_data_to_item(id, data);
         let expected_len = 4;
@@ -59,7 +62,7 @@ mod tests {
         let id = "5";
         let data = &EncryptData {
             nonce: vec![0x04, 0x05, 0x06],
-            cipher_text: vec![0x07, 0x08, 0x09],
+            encrypted_text: vec![0x07, 0x08, 0x09],
         };
         let item = encrypt_data_to_item(id, data);
         let got = item_to_encryt_data(&item).expect("failed to transform");
@@ -69,9 +72,9 @@ mod tests {
             data.nonce, got.nonce,
         );
         assert_eq!(
-            data.cipher_text, got.cipher_text,
+            data.encrypted_text, got.encrypted_text,
             "expected cipher_text: {:?}, got: {:?}",
-            data.cipher_text, got.cipher_text,
+            data.encrypted_text, got.encrypted_text,
         )
     }
 }

@@ -1,6 +1,8 @@
 My understanding of AES-256 is for encryption:
 - You need a 32 byte key
-- A nonce: a number (not a secret) that must never repeat when using the same key. Without it, encrypting the same plaintext and same cipher/key would always produce the same ciphertext which is not what we want.
+- A nonce: a number (not a secret) that must never repeat when using the 
+same key. Without it, encrypting the same plaintext and same cipher/key 
+would always produce the same ciphertext which is not what we want.
 
 
 in the request body they'll only send the key and link they want to encrypt. to decrypt, they'll send an encrypted text, and a key. 
@@ -19,3 +21,8 @@ curl -X POST http://localhost:3000/encrypt \
   -d '{"plain_text":"http://yahoo.com","key":"foobar"}'
 
 http://localhost:3000/decrypt/b30cefdc-50a9-4bcb-b056-0e6377068088/foobar
+
+    // String can only handle UTF-8 text. ciphertext is raw bytes
+    // that can include invalid UTF-8, thus being misrepresented
+    // in String format. Since raw bytes are just binary, encode
+    // it in base64 that is text safe.
