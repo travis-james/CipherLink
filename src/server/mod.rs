@@ -10,7 +10,10 @@ use url::Url;
 use uuid::Uuid;
 
 use crate::{
-    app_config::AppConfig, crypto::{decrypt, encrypt}, db::{self, DynamoDBClient}, transformer::{encrypt_data_to_item, item_to_encryt_data}
+    app_config::AppConfig,
+    crypto::{decrypt, encrypt},
+    db::{self, DynamoDBClient},
+    transformer::{encrypt_data_to_item, item_to_encryt_data},
 };
 
 #[derive(Serialize)]

@@ -1,8 +1,6 @@
-// src/config.rs
-use config::{Config as RawConfig, Environment};
-use serde::Deserialize;
+use std::env;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug)]
 pub struct AppConfig {
     pub region: String,
     pub db_url: String,
@@ -11,11 +9,17 @@ pub struct AppConfig {
 
 impl AppConfig {
     pub fn from_env() -> Self {
-        RawConfig::builder()
-            .add_source(Environment::with_prefix("CONFIG").separator("_"))
-            .build()
-            .unwrap()
-            .try_deserialize()
-            .unwrap()
+        let region = env::var("CONFIG_REGION").expect("unable to get region");
+        let db_url = env::var("CONFIG_DB_URL").expect("unable to get db url");
+        let server_port = env::var("CONFIG_SERVER_PORT")
+            .expect("unable to get server port")
+            .parse::<u16>()
+            .expect("CONFIG_SERVER_PORT must be a valid u16");
+
+        AppConfig {
+            region,
+            db_url,
+            server_port,
+        }
     }
 }
