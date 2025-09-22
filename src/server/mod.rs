@@ -130,6 +130,14 @@ async fn decrypt_handler(
         }
     };
 
+    // Delete data from dynamo db.
+    if let Err(e) = db_client.delete("encryptData", "id", &params.id).await {
+        return Json(ErrorResponse {
+            error: format!("Failed to delete: {}", e),
+        })
+        .into_response();
+    }
+
     // Finally redirect.
     let str_data = String::from_utf8_lossy(&decrypted_data).to_string();
     match Url::parse(&str_data) {

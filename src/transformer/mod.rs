@@ -27,10 +27,7 @@ pub fn item_to_encryt_data(item: &HashMap<String, AttributeValue>) -> Result<Enc
         Some(AttributeValue::B(bytes)) => bytes.as_ref().to_vec(),
         _ => return Err("Missing or invalid 'cipher_text'".into()),
     };
-    Ok(EncryptData {
-        nonce,
-        cipher_text,
-    })
+    Ok(EncryptData { nonce, cipher_text })
 }
 
 #[cfg(test)]

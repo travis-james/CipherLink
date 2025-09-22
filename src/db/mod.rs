@@ -96,6 +96,19 @@ impl DynamoDBClient {
             .ok_or_else(|| format!("Item not found for: {}", val))
     }
 
+    pub async fn delete(&self, table: &str, key: &str, value: &str) -> Result<(), String> {
+        self.client
+            .delete_item()
+            .table_name(table)
+            .key(key, AttributeValue::S(value.into()))
+            .send()
+            .await
+            .map_err(|e| format!("Failed to delete item: {}", e))?;
+
+        println!("Deleted item from table");
+        Ok(())
+    }
+
     pub async fn check_db(&self) -> Result<(), Error> {
         self.client.list_tables().send().await?;
         Ok(())

@@ -18,4 +18,4 @@ curl -X POST http://localhost:3000/encrypt \
   -H "Content-Type: application/json" \
   -d '{"plain_text":"http://yahoo.com","key":"foobar"}'
 
-curl http://localhost:3000/decrypt/4dd43be4-7e9b-4dbc-97c1-3652e77147f9/foobar
+http://localhost:3000/decrypt/4dd43be4-7e9b-4dbc-97c1-3652e77147f9/foobar
