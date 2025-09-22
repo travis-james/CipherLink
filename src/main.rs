@@ -1,17 +1,21 @@
 use std::env;
 
-use crate::{app_config::Config, crypto::encrypt, transformer::encrypt_data_to_item};
+use crate::{crypto::encrypt, transformer::encrypt_data_to_item};
 
 mod crypto;
-pub mod db;
+mod db;
 mod server;
 mod transformer;
 mod app_config;
+use app_config::AppConfig;
 
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().ok(); 
-    
+    dotenv::dotenv().ok(); // Load .env from project root
+
+    let config = AppConfig::from_env();
+    println!("Loaded config: {:?}", config);
+
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         eprintln!("must specify mode: 'server', 'seed'");
@@ -20,8 +24,8 @@ async fn main() {
 
     let mode = args[1].as_str();
     match mode {
-        "server" => server::init().await,
-        "seed" => seed_db().await,
+        "server" => server::init(config).await,
+        "seed" => seed_db(config).await,
         _ => {
             eprintln!("Unknown mode: '{}'.", mode);
             std::process::exit(1);
@@ -29,11 +33,9 @@ async fn main() {
     }
 }
 
-async fn seed_db() {
+async fn seed_db(config: AppConfig) {
     println!("Starting 'db' mode, seeding DynamoDB....");
 
-    let config = Config::from_env();
-    println!("Loaded config: {:?}", config);
     let db_client = db::init(&config.db_url, &config.region).await;
     let table_name = "encryptData";
     let attribute_name = "id";
