@@ -50,6 +50,8 @@ struct DecryptParams {
     key: String,
 }
 
+///  Initialize the app. Creates and runs an axum server and a 
+/// dynamodb client based on the input config.
 pub async fn init(config: AppConfig) {
     let db_client = db::init(&config.db_url, &config.region).await;
 
@@ -64,10 +66,19 @@ pub async fn init(config: AppConfig) {
     axum::serve(listener, app).await.unwrap();
 }
 
+/// health_handler is just used to see if one can get a response
+/// from the app.
 async fn health_handler() -> impl IntoResponse {
     (StatusCode::OK, Json(HealthStatus { status: "healthy" }))
 }
 
+/// encrypt_handler for the /encrypt endpoint.
+/// expects a POST and json body like:
+/// {"plain_text":"http://yahoo.com","key":"foobar"}
+/// Returns a UUID that needeed for decryption.
+/// 
+/// # Errors
+/// Encryption and inserting to the db can fail.
 async fn encrypt_handler(
     Extension(db_client): Extension<DynamoDBClient>,
     Json(payload): Json<EncryptRequest>,
@@ -93,6 +104,16 @@ async fn encrypt_handler(
     Json(EncryptApiResponse::Ok(EncryptResponse { id }))
 }
 
+/// decrypt_handler is used for the /decrypt/{id}/{key} endpoint.
+/// Requires the key used for the original decryption and UUID
+/// that was returned when the encrypt handle was called.
+/// Assuming a valid UUID and key, the app will redirect the user
+/// to the encrypted URL. The database entry is then deleted.
+/// 
+/// # Errors
+/// Potential failures on the following steps retrieving/deleting 
+/// from the db, decoding/transforming the data from the db, 
+/// and decryption.
 async fn decrypt_handler(
     Extension(db_client): Extension<DynamoDBClient>,
     Path(params): Path<DecryptParams>,
