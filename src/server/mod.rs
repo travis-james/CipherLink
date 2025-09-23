@@ -95,7 +95,7 @@ async fn encrypt_handler(
     let id = Uuid::new_v4().to_string();
     let item = encrypt_data_to_item(&id, &encrypted_data);
 
-    if let Err(e) = db_client.insert_item("encryptData", item).await {
+    if let Err(e) = db_client.insert("encryptData", item).await {
         return Json(EncryptApiResponse::Err(ErrorResponse {
             error: format!("DB insert failed: {}", e),
         }));

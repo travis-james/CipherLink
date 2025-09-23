@@ -15,8 +15,8 @@ pub struct DynamoDBClient {
     client: Client,
 }
 
-// "http://localhost:8000"
-// "us-west-2"
+/// initialize a db client instance. One will need to init_table
+/// after calling this.
 pub async fn init(url: &str, region: &str) -> DynamoDBClient {
     let creds = Credentials::new("dummy", "dummy", None, None, "dummy");
     let config = aws_config::from_env()
@@ -32,6 +32,7 @@ pub async fn init(url: &str, region: &str) -> DynamoDBClient {
 }
 
 impl DynamoDBClient {
+    /// initialize a tablee in the db.
     pub async fn init_table(&self, table_name: &str, attribute_name: &str) -> Result<(), Error> {
         self.client
             .create_table()
@@ -62,7 +63,8 @@ impl DynamoDBClient {
         Ok(())
     }
 
-    pub async fn insert_item(
+    /// insert an item in the db.
+    pub async fn insert(
         &self,
         table_name: &str,
         item: HashMap<String, AttributeValue>,
@@ -76,6 +78,7 @@ impl DynamoDBClient {
         Ok(())
     }
 
+    /// get an item from the db.
     pub async fn get(
         &self,
         table_name: &str,
@@ -96,6 +99,7 @@ impl DynamoDBClient {
             .ok_or_else(|| format!("Item not found for: {}", val))
     }
 
+    /// delete an item from the db.
     pub async fn delete(&self, table: &str, key: &str, value: &str) -> Result<(), String> {
         self.client
             .delete_item()
@@ -109,11 +113,14 @@ impl DynamoDBClient {
         Ok(())
     }
 
+    /// check db is meant to be usd like a PING functionality.
     pub async fn check_db(&self) -> Result<(), Error> {
         self.client.list_tables().send().await?;
         Ok(())
     }
 
+    /// dump table is for dev/debug purposes, currently not used
+    /// anywhere in the app.
     pub async fn dump_table(&self, table_name: &str) -> Result<(), Error> {
         let resp = self.client.scan().table_name(table_name).send().await?;
         for item in resp.items() {

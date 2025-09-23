@@ -52,13 +52,13 @@ async fn seed_db(config: AppConfig) {
 
     let id1 = "id1";
     db_client
-        .insert_item(table_name, encrypt_data_to_item(id1, &encrypt_data1))
+        .insert(table_name, encrypt_data_to_item(id1, &encrypt_data1))
         .await
         .unwrap();
 
     let id2 = "id2";
     db_client
-        .insert_item(table_name, encrypt_data_to_item(id2, &encrypt_data2))
+        .insert(table_name, encrypt_data_to_item(id2, &encrypt_data2))
         .await
         .unwrap();
 

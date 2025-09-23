@@ -4,6 +4,8 @@ use aws_sdk_dynamodb::types::AttributeValue;
 
 use crate::crypto::EncryptData;
 
+/// encodes an EncryptData struct into binary to be stored in 
+/// dynamodb so the data doesn't get mangled.
 pub fn encrypt_data_to_item(id: &str, data: &EncryptData) -> HashMap<String, AttributeValue> {
     let mut item = HashMap::new();
     item.insert("id".to_string(), AttributeValue::S(id.to_string()));
@@ -18,6 +20,10 @@ pub fn encrypt_data_to_item(id: &str, data: &EncryptData) -> HashMap<String, Att
     item
 }
 
+/// decodes data retrieved from dynamodb to an EncryptData struct.
+/// 
+/// # Errors
+/// Can error if the item is missing expected attributes.
 pub fn item_to_encryt_data(item: &HashMap<String, AttributeValue>) -> Result<EncryptData, String> {
     let nonce = match item.get("nonce") {
         Some(AttributeValue::B(bytes)) => bytes.as_ref().to_vec(),
