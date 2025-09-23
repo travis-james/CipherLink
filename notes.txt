@@ -26,3 +26,5 @@ http://localhost:3000/decrypt/b30cefdc-50a9-4bcb-b056-0e6377068088/foobar
     // that can include invalid UTF-8, thus being misrepresented
     // in String format. Since raw bytes are just binary, encode
     // it in base64 that is text safe.
+
+    https://github.com/awslabs/aws-lambda-rust-runtime/blob/main/examples/http-basic-lambda/src/main.rs
