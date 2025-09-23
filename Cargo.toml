@@ -18,3 +18,4 @@ uuid = { version = "1", features = ["v4"] }
 url = "2"
 config = "0.13"
 dotenv = "0.15"
+lambda_http = "0.8"

@@ -5,8 +5,11 @@ use crate::{app_config::AppConfig, crypto::encrypt, transformer::encrypt_data_to
 mod app_config;
 mod crypto;
 mod db;
-mod server;
+mod handlers;
+mod lambda;
+mod rest;
 mod transformer;
+mod types;
 
 #[tokio::main]
 async fn main() {
@@ -22,7 +25,7 @@ async fn main() {
 
     let mode = args[1].as_str();
     match mode {
-        "server" => server::init(config).await,
+        "server" => rest::init(config).await,
         "seed" => seed_db(config).await,
         _ => {
             eprintln!("Unknown mode: '{}'.", mode);
