@@ -12,7 +12,7 @@ use crate::{
 pub async fn router(
     event: Request,
     db_client: &DynamoDBClient,
-) -> Result<Response<lambda_http::Body>, Error> {
+) -> Result<Response<Body>, Error> {
     let path = event.uri().path();
     let method = event.method().as_str();
 
@@ -20,10 +20,7 @@ pub async fn router(
         ("GET", "/health") => lambda_health_handler().await,
         ("POST", "/encrypt") => lambda_encrypt_handler(event, db_client).await,
         _ if path.starts_with("/decrypt/") => lambda_decrypt_handler(path, db_client).await,
-        _ => crate::lambda::helpers::json_response(
-            &crate::lambda::helpers::error_payload("Not Found"),
-            http::StatusCode::NOT_FOUND,
-        ),
+        _ => json_response(&error_payload("Not Found"), StatusCode::NOT_FOUND),
     };
 
     Ok(resp)

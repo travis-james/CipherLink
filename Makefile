@@ -8,8 +8,24 @@ run-db:
 stop-db:
 	docker stop $(DYNAMODB_CONTAINER_NAME)
 	docker rm $(DYNAMODB_CONTAINER_NAME)
-
 seed:
 	cargo run -- seed
+
 server:
 	cargo run -- server
+
+lambda:
+	cargo lambda watch
+health:
+	echo '{"httpMethod":"GET","path":"/health"}' > lambda_event.json
+	cargo lambda invoke --data-file lambda_event.json | jq
+	rm lambda_event.json
+encrypt:
+	echo '{"httpMethod":"POST","path":"/encrypt","body":"{\"key\":\"music\",\"plain_text\":\"http://yahoo.com\"}"}' > lambda_event.json
+	cargo lambda invoke --data-file lambda_event.json | jq
+	rm lambda_event.json
+decrypt:
+	echo '{"httpMethod":"GET","path":"/decrypt/e08adfab-5afd-446b-b814-839c49dc73b3/music"}' > lambda_event.json
+	cargo lambda invoke --data-file lambda_event.json | jq
+	rm lambda_event.json
+

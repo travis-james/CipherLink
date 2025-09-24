@@ -18,16 +18,16 @@ async fn main() {
     let config = app_config::AppConfig::from_env();
 
     let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        eprintln!("must specify mode: 'server', 'seed'");
-        std::process::exit(1);
-    }
+    let mode = if args.len() >= 2 {
+        args[1].as_str()
+    } else {
+        "lambda" // cargo lambda watch won't take args.
+    };
 
-    let mode = args[1].as_str();
     match mode {
         "server" => rest::init(config).await,
         "seed" => seed_db(config).await,
-        "lambda" => lambda::serve(config).await,
+        "lambda" => lambda::init(config).await,
         _ => {
             eprintln!("Unknown mode: '{}'.", mode);
             std::process::exit(1);
