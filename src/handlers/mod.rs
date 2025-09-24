@@ -11,10 +11,9 @@ pub async fn health_handler() -> HealthStatus {
     HealthStatus { status: "healthy" }
 }
 
-/// encrypt_handler for the /encrypt endpoint.
-/// expects a POST and json body like:
-/// {"plain_text":"http://yahoo.com","key":"foobar"}
-/// Returns a UUID that needeed for decryption.
+/// encrypt_handler encrypts the data in the request, inserts
+/// it into dynamodb then returns a UUID that is needeed for 
+/// decryption.
 ///
 /// # Errors
 /// Encryption and inserting to the db can fail.
@@ -36,11 +35,11 @@ pub async fn encrypt_handler(
     Ok(EncryptResponse { id })
 }
 
-/// decrypt_handler is used for the /decrypt/{id}/{key} endpoint.
-/// Requires the key used for the original decryption and UUID
-/// that was returned when the encrypt handle was called.
-/// Assuming a valid UUID and key, the app will redirect the user
-/// to the encrypted URL. The database entry is then deleted.
+/// decrypt_handler requires the key used for the original 
+/// decryption and UUID that was returned when the encrypt handle
+/// was called.
+/// Assuming a valid UUID and key, the app will return the
+/// plaintext.
 ///
 /// # Errors
 /// Potential failures on the following steps retrieving/deleting

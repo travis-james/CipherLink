@@ -18,7 +18,7 @@ pub struct DynamoDBClient {
 /// initialize a db client instance. One will need to init_table
 /// after calling this.
 pub async fn init(url: &str, region: &str) -> DynamoDBClient {
-    let creds = Credentials::new("dummy", "dummy", None, None, "dummy");
+    let creds = Credentials::new("dummy", "dummy", None, None, "dummy"); // TODO: credentials
     let config = aws_config::from_env()
         .endpoint_url(url)
         .region(Region::new(region.to_string()))
@@ -53,7 +53,7 @@ impl DynamoDBClient {
             )
             .provisioned_throughput(
                 ProvisionedThroughput::builder()
-                    .read_capacity_units(5)
+                    .read_capacity_units(5) // TODO: make dynamic?
                     .write_capacity_units(5)
                     .build()
                     .unwrap(),
@@ -114,6 +114,8 @@ impl DynamoDBClient {
     }
 
     /// check db is meant to be usd like a PING functionality.
+    /// Not in use in hte app currently.
+    #[allow(dead_code)]
     pub async fn check_db(&self) -> Result<(), Error> {
         self.client.list_tables().send().await?;
         Ok(())
@@ -121,6 +123,7 @@ impl DynamoDBClient {
 
     /// dump table is for dev/debug purposes, currently not used
     /// anywhere in the app.
+    #[allow(dead_code)]
     pub async fn dump_table(&self, table_name: &str) -> Result<(), Error> {
         let resp = self.client.scan().table_name(table_name).send().await?;
         for item in resp.items() {

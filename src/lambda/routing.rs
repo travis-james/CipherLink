@@ -9,6 +9,11 @@ use crate::{
     types::{EncryptRequest, HealthStatus},
 };
 
+/// Minimal request dispatcher for AWS Lambda.
+///
+/// Matches incoming HTTP method and path to the 
+/// appropriate handler.
+/// Not a full-featured router—just manual pattern matching..
 pub async fn router(
     event: Request,
     db_client: &DynamoDBClient,
@@ -26,6 +31,7 @@ pub async fn router(
     Ok(resp)
 }
 
+/// Lambda wrapper for health_handler.
 pub async fn lambda_health_handler() -> Response<Body> {
     let status: HealthStatus = health_handler().await;
     let body = serde_json::to_string(&status).unwrap_or_else(|_| "{}".to_string());
@@ -33,6 +39,7 @@ pub async fn lambda_health_handler() -> Response<Body> {
     json_response(&body, StatusCode::OK)
 }
 
+/// Lambda wrapper for encrypt_handler.
 pub async fn lambda_encrypt_handler(event: Request, db_client: &DynamoDBClient) -> Response<Body> {
     let body_string = match event.body() {
         Body::Text(s) => s.clone(),
@@ -56,6 +63,7 @@ pub async fn lambda_encrypt_handler(event: Request, db_client: &DynamoDBClient) 
     }
 }
 
+/// Lambda wrapper for decrypt_handler.
 pub async fn lambda_decrypt_handler(path: &str, db_client: &DynamoDBClient) -> Response<Body> {
     let parts: Vec<&str> = path.trim_start_matches("/decrypt/").split('/').collect();
     if parts.len() != 2 {
