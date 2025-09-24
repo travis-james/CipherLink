@@ -18,9 +18,9 @@ pub async fn init(config: AppConfig) {
     let db_client = db::init(&config.db_url, &config.region).await;
 
     let app = Router::new()
-        .route("/health", get(health_rest_handler))
-        .route("/encrypt", post(encrypt_rest_handler))
-        .route("/decrypt/{id}/{key}", get(decrypt_rest_handler))
+        .route("/health", get(rest_health_handler))
+        .route("/encrypt", post(rest_encrypt_handler))
+        .route("/decrypt/{id}/{key}", get(rest_decrypt_handler))
         .layer(Extension(db_client));
 
     let addr = format!("0.0.0.0:{}", config.server_port);
@@ -30,9 +30,9 @@ pub async fn init(config: AppConfig) {
 
 /// health_handler is just used to see if one can get a response
 /// from the app.
-async fn health_rest_handler() -> impl IntoResponse {
+async fn rest_health_handler() -> Response {
     let status = health_handler().await;
-    Json(status)
+    Json(status).into_response()
 }
 
 /// encrypt_handler for the /encrypt endpoint.
@@ -42,10 +42,10 @@ async fn health_rest_handler() -> impl IntoResponse {
 ///
 /// # Errors
 /// Encryption and inserting to the db can fail.
-pub async fn encrypt_rest_handler(
+pub async fn rest_encrypt_handler(
     Extension(db_client): Extension<DynamoDBClient>,
     Json(payload): Json<EncryptRequest>,
-) -> impl IntoResponse {
+) -> Response {
     match encrypt_handler(&db_client, payload).await {
         Ok(resp) => Json(EncryptApiResponse::Ok(resp)).into_response(),
         Err(err) => Json(EncryptApiResponse::Err(err)).into_response(),
@@ -62,7 +62,7 @@ pub async fn encrypt_rest_handler(
 /// Potential failures on the following steps retrieving/deleting
 /// from the db, decoding/transforming the data from the db,
 /// and decryption.
-async fn decrypt_rest_handler(
+async fn rest_decrypt_handler(
     Extension(db_client): Extension<DynamoDBClient>,
     Path(params): Path<DecryptParams>,
 ) -> Response {

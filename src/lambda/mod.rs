@@ -1,14 +1,18 @@
-use lambda_http::{Response, Body};
+use lambda_http::{handler, lambda_runtime, Request};
+use lambda_runtime::Error;
+use crate::lambda::routing::router;
+use crate::app_config::AppConfig;
+use crate::db;
 
-use crate::{handlers::health_handler, types::HealthStatus};
+mod helpers;
+mod routing;
 
-pub async fn lambda_health_handler() -> Response<Body> {
-    let status: HealthStatus = health_handler().await;
-    let body = serde_json::to_string(&status).unwrap_or_else(|_| "{}".to_string());
-
-    Response::builder()
-        .status(200)
-        .header("content-type", "application/json")
-        .body(body.into())
-        .unwrap()
+pub async fn serve(config: AppConfig) -> Result<(), Error> {
+    let db_client = db::init(&config.db_url, &config.region).await;
+    lambda_runtime::run(handler(move |event: Request| {
+        let db_client = db_client.clone();
+        async move { router(event, &db_client).await }
+    }))
+    .await?;
+    Ok(())
 }

@@ -27,6 +27,7 @@ async fn main() {
     match mode {
         "server" => rest::init(config).await,
         "seed" => seed_db(config).await,
+        "lambda" => lambda::serve(config).await,
         _ => {
             eprintln!("Unknown mode: '{}'.", mode);
             std::process::exit(1);

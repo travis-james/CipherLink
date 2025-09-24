@@ -1,11 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]
-pub struct ErrorResponse {
-    pub error: String,
-}
-
-#[derive(Serialize)]
 pub struct HealthStatus {
     pub status: &'static str,
 }

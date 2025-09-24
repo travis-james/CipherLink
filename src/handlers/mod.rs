@@ -20,10 +20,10 @@ pub async fn health_handler() -> HealthStatus {
 /// Encryption and inserting to the db can fail.
 pub async fn encrypt_handler(
     db_client: &DynamoDBClient,
-    payload: EncryptRequest,
+    encrypt_request: EncryptRequest,
 ) -> Result<EncryptResponse, String> {
-    let encrypted_data =
-        encrypt(&payload.plain_text, &payload.key).map_err(|_| "Encryption failed")?;
+    let encrypted_data = encrypt(&encrypt_request.plain_text, &encrypt_request.key)
+        .map_err(|_| "Encryption failed")?;
 
     let id = uuid::Uuid::new_v4().to_string();
     let item = encrypt_data_to_item(&id, &encrypted_data);
