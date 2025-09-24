@@ -34,3 +34,18 @@ pub fn build_response(
         .body(body.into())
         .unwrap()
 }
+
+/// Extracts what is expected to be a string from the body of a
+/// lambda event. It's not reused, just wanted to lighten the
+/// coginitive load in lambda/routing.rs.
+pub fn extract_body_string(body: &Body) -> Result<String, Response<Body>> {
+    match body {
+        Body::Text(s) => Ok(s.clone()),
+        Body::Binary(b) => String::from_utf8(b.clone())
+            .map_err(|_| json_response(&error_payload("Invalid UTF-8"), StatusCode::BAD_REQUEST)),
+        Body::Empty => Err(json_response(
+            &error_payload("Empty body"),
+            StatusCode::BAD_REQUEST,
+        )),
+    }
+}

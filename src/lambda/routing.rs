@@ -5,19 +5,16 @@ use lambda_runtime::Error;
 use crate::{
     db::DynamoDBClient,
     handlers::{decrypt_handler, encrypt_handler, health_handler},
-    lambda::helpers::{error_payload, json_response, redirect_response},
+    lambda::helpers::{error_payload, extract_body_string, json_response, redirect_response},
     types::{EncryptRequest, HealthStatus},
 };
 
 /// Minimal request dispatcher for AWS Lambda.
 ///
-/// Matches incoming HTTP method and path to the 
+/// Matches incoming HTTP method and path to the
 /// appropriate handler.
 /// Not a full-featured router—just manual pattern matching..
-pub async fn router(
-    event: Request,
-    db_client: &DynamoDBClient,
-) -> Result<Response<Body>, Error> {
+pub async fn router(event: Request, db_client: &DynamoDBClient) -> Result<Response<Body>, Error> {
     let path = event.uri().path();
     let method = event.method().as_str();
 
@@ -41,15 +38,9 @@ pub async fn lambda_health_handler() -> Response<Body> {
 
 /// Lambda wrapper for encrypt_handler.
 pub async fn lambda_encrypt_handler(event: Request, db_client: &DynamoDBClient) -> Response<Body> {
-    let body_string = match event.body() {
-        Body::Text(s) => s.clone(),
-        Body::Binary(b) => match String::from_utf8(b.clone()) {
-            Ok(s) => s,
-            Err(_) => {
-                return json_response(&error_payload("Invalid UTF-8"), StatusCode::BAD_REQUEST);
-            }
-        },
-        Body::Empty => return json_response(&error_payload("Empty body"), StatusCode::BAD_REQUEST),
+    let body_string = match extract_body_string(event.body()) {
+        Ok(s) => s,
+        Err(resp) => return resp,
     };
 
     let payload: EncryptRequest = match serde_json::from_str(&body_string) {
@@ -72,15 +63,13 @@ pub async fn lambda_decrypt_handler(path: &str, db_client: &DynamoDBClient) -> R
             StatusCode::BAD_REQUEST,
         );
     }
-
-    let decrypted = decrypt_handler(db_client, parts[0].to_string(), parts[1].to_string()).await;
-    if let Ok(url) = decrypted {
-        if let Ok(valid_url) = url::Url::parse(&url) {
-            return redirect_response(valid_url.as_str());
-        } else {
-            return json_response(&error_payload("Invalid URL"), StatusCode::BAD_REQUEST);
-        }
-    } else {
-        return json_response(&decrypted.unwrap_err(), StatusCode::INTERNAL_SERVER_ERROR);
+    let id = parts[0].to_string();
+    let key = parts[1].to_string();
+    match decrypt_handler(db_client, id , key).await {
+        Ok(url) => match url::Url::parse(&url) {
+            Ok(valid_url) => redirect_response(valid_url.as_str()),
+            Err(_) => json_response(&error_payload("Invalid URL"), StatusCode::BAD_REQUEST),
+        },
+        Err(err) => json_response(&err, StatusCode::INTERNAL_SERVER_ERROR),
     }
 }

@@ -12,7 +12,7 @@ pub async fn health_handler() -> HealthStatus {
 }
 
 /// encrypt_handler encrypts the data in the request, inserts
-/// it into dynamodb then returns a UUID that is needeed for 
+/// it into dynamodb then returns a UUID that is needeed for
 /// decryption.
 ///
 /// # Errors
@@ -35,11 +35,10 @@ pub async fn encrypt_handler(
     Ok(EncryptResponse { id })
 }
 
-/// decrypt_handler requires the key used for the original 
+/// decrypt_handler requires the key used for the original
 /// decryption and UUID that was returned when the encrypt handle
 /// was called.
-/// Assuming a valid UUID and key, the app will return the
-/// plaintext.
+/// Assuming a valid UUID and key, will return the plaintext.
 ///
 /// # Errors
 /// Potential failures on the following steps retrieving/deleting

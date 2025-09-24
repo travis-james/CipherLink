@@ -109,7 +109,6 @@ impl DynamoDBClient {
             .await
             .map_err(|e| format!("Failed to delete item: {}", e))?;
 
-        println!("Deleted item from table");
         Ok(())
     }
 
