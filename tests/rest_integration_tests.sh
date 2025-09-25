@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+set -euo pipefail
 
 echo "▶️ Starting /health test"
 response=$(curl -sS http://localhost:3000/health)

@@ -31,9 +31,7 @@ pub async fn router(event: Request, db_client: &DynamoDBClient) -> Result<Respon
 /// Lambda wrapper for health_handler.
 pub async fn lambda_health_handler() -> Response<Body> {
     let status: HealthStatus = health_handler().await;
-    let body = serde_json::to_string(&status).unwrap_or_else(|_| "{}".to_string());
-
-    json_response(&body, StatusCode::OK)
+    json_response(&status, StatusCode::OK)
 }
 
 /// Lambda wrapper for encrypt_handler.
@@ -65,7 +63,7 @@ pub async fn lambda_decrypt_handler(path: &str, db_client: &DynamoDBClient) -> R
     }
     let id = parts[0].to_string();
     let key = parts[1].to_string();
-    match decrypt_handler(db_client, id , key).await {
+    match decrypt_handler(db_client, id, key).await {
         Ok(url) => match url::Url::parse(&url) {
             Ok(valid_url) => redirect_response(valid_url.as_str()),
             Err(_) => json_response(&error_payload("Invalid URL"), StatusCode::BAD_REQUEST),

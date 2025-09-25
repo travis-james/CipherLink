@@ -25,9 +25,11 @@ encrypt:
 	cargo lambda invoke --data-file lambda_event.json | jq
 	rm lambda_event.json
 decrypt:
-	echo '{"httpMethod":"GET","path":"/decrypt/e08adfab-5afd-446b-b814-839c49dc73b3/music"}' > lambda_event.json
+	echo '{"httpMethod":"GET","path":"/decrypt/a83feb6f-540e-43ef-b44d-845f55be0406/music"}' > lambda_event.json
 	cargo lambda invoke --data-file lambda_event.json | jq
 	rm lambda_event.json
 
 test-rest:
 	./tests/rest_integration_tests.sh
+test-lambda:
+	./tests/lambda_integration_tests.sh
