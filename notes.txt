@@ -20,7 +20,7 @@ curl -X POST http://localhost:3000/encrypt \
   -H "Content-Type: application/json" \
   -d '{"plain_text":"http://yahoo.com","key":"foobar"}'
 
-http://localhost:3000/decrypt/b30cefdc-50a9-4bcb-b056-0e6377068088/foobar
+http://localhost:3000/decrypt/43aa30f4-d35f-4b1a-92d6-fca99212a9ea/foobar
 
     // String can only handle UTF-8 text. ciphertext is raw bytes
     // that can include invalid UTF-8, thus being misrepresented

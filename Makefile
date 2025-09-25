@@ -29,3 +29,5 @@ decrypt:
 	cargo lambda invoke --data-file lambda_event.json | jq
 	rm lambda_event.json
 
+test-rest:
+	./tests/rest_integration_tests.sh
