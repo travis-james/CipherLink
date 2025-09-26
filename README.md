@@ -1,7 +1,7 @@
 # CipherLink
 Ephemeral redirector with key-gated access built in Rust.
 
-⚠️ This is **not** a zero-knowledge system. The server sees the plaintext URL during encryption. See threat model below.
+⚠️ This is **not** a zero-knowledge system. The server sees the plaintext URL during encryption. See [threat model](https://github.com/travis-james/CipherLink/blob/main/README.md#threat-model) below.
 
 ## Overview / Motivation
 The practicality of this is for users to create an obfuscated shareable link that only works with a key, and will become invalid after one use.
