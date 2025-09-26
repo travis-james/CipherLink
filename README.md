@@ -45,7 +45,8 @@ make lambda
 ```
 see Makefile commands for the available Lambda commands to interact with this app in that mode.
 ### Config
-What little environment variables there are, exist at the top of the Makefile.
+See [.env](https://github.com/travis-james/CipherLink/blob/main/.env) file.
+Docker variables are at the top of the [Makefile](https://github.com/travis-james/CipherLink/blob/3d067076f8c503fde5ca0fcea8e5d42be1aa23a1/Makefile#L1-L4) for now.
 ### Testing 
 Unit tests are pretty minimal, tests instead focus on behavior rather than coverage. Depending on the app mode, one can run integration tests for REST or Lambda mode:
 ```
