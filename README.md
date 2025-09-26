@@ -3,7 +3,7 @@ Ephemeral redirector with key-gated access built in Rust.
 
 ⚠️ This is **not** a zero-knowledge system. The server sees the plaintext URL during encryption. See [threat model](https://github.com/travis-james/CipherLink/blob/main/README.md#threat-model) below.
 
-## Overview / Motivation
+## Overview
 The practicality of this is for users to create an obfuscated shareable link that only works with a key, and will become invalid after one use.
 Essentially the flow is:
 #### /encrypt
@@ -20,6 +20,7 @@ Essentially the flow is:
 [Server] → fetch encrypted → decrypt with key → validate URL → redirect
 ```
 
+## Motivation
 
 I created this because I wanted to know what it was like to create a REST app in Rust.
 
