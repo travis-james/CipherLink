@@ -7,14 +7,18 @@ Ephemeral redirector with key-gated access built in Rust.
 The practicality of this is for users to create an obfuscated shareable link that only works with a key, and will become invalid after one use.
 Essentially the flow is:
 #### /encrypt
+```
 [Client] → (plaintext + key) → [Server]
 
 [Server] → encrypt(plaintext, key) → store in DB → return UUID
+```
 
 #### /decrypt
+```
 [Client] → (UUID + key) → [Server]
 
 [Server] → fetch encrypted → decrypt with key → validate URL → redirect
+```
 
 
 I created this because I wanted to know what it was like to create a REST app in Rust.
@@ -52,12 +56,12 @@ or
 make test-lambda
 ```
 
-## Other
-Please see the github wiki for additional information.
-
 ## Threat Model
 * **What it protects**: casual scraping, bot access, link obfuscation
 
 * **What it doesn’t**: server compromise, true zero-knowledge
 
 * **Why**: encryption is done server-side for simplicity and demonstration
+
+## Other
+Please see the github [wiki](https://github.com/travis-james/CipherLink/wiki) for additional information.
