@@ -1,3 +1,6 @@
+just random notes while i was working on this, not relevant to
+any user.
+
 My understanding of AES-256 is for encryption:
 - You need a 32 byte key
 - A nonce: a number (not a secret) that must never repeat when using the 
@@ -9,8 +12,6 @@ in the request body they'll only send the key and link they want to encrypt. to 
 use hashed key to look up, that way hopefully there's no duplictes.
 trying to do this where the user has to do as little as possible.
 
-
-DynamoDB Local: Stores data in a custom format inside a directory (-dbPath) but does not support importing .json or .rdb files directly at startup. It expects you to seed via API calls (e.g., AWS CLI or SDK).
 
 https://docs.aws.amazon.com/sdk-for-rust/latest/dg/hello.html
 
@@ -28,3 +29,5 @@ http://localhost:3000/decrypt/43aa30f4-d35f-4b1a-92d6-fca99212a9ea/foobar
     // it in base64 that is text safe.
 
     https://github.com/awslabs/aws-lambda-rust-runtime/blob/main/examples/http-basic-lambda/src/main.rs
+
+    cargo install cargo-lambda

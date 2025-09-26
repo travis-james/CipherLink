@@ -13,13 +13,13 @@ post {
 body:json {
   {
     "plain_text": "http://yahoo.com",
-    "key": "foobar"
+    "key": "{{key}}"
   }
 }
 
 tests {
   test("200 OK", function () {
-    expect(200).to.equal(res.status);
+    expect(res.status).to.equal(200);
   })
   
   const body = res.body;
